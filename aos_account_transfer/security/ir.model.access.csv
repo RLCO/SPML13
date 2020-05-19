@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_payment_line_user,account.payment.line.user,model_account_payment_line,base.group_user,1,0,0,0
+access_account_payment_line_acct,account.payment.line.acct,model_account_payment_line,account.group_account_invoice,1,1,1,1
+access_account_payment_line_manager,account.payment.line.manager,model_account_payment_line,account.group_account_manager,1,1,1,1
+access_account_payment_other_user,account.payment.other.user,model_account_payment_other,base.group_user,1,0,0,0
+access_account_payment_other_acct,account.payment.other.acct,model_account_payment_other,account.group_account_invoice,1,1,1,1
+access_account_payment_other_manager,account.payment.other.manager,model_account_payment_other,account.group_account_manager,1,1,1,1

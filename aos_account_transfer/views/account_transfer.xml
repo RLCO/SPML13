@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <!-- <menuitem action="account.action_bank_statement_tree" id="menu_action_bank_statement" parent="menu_finance_payment_bank_cash" sequence="10"/> -->
+        
+        <!-- <record id="action_cash_register_view1" model="ir.actions.act_window.view">
+            <field eval="1" name="sequence"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="account.view_bank_statement_tree"/>
+            <field name="act_window_id" ref="account.action_view_bank_statement_tree"/>
+        </record>
+
+        <record id="action_cash_register_view2" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="account.view_bank_statement_form"/>
+            <field name="act_window_id" ref="account.action_view_bank_statement_tree"/>
+        </record> -->
+        
+        <menuitem name="Invoicing"
+            id="aos_base_account.menu_invoicing"  
+            groups="aos_base_account.group_accounting_receivable,aos_base_account.group_accounting_payable,aos_account_transfer.group_accounting_cash_and_bank"
+            icon="fa-usd"
+            web_icon="account,static/description/icon.png"
+            sequence="39"/>
+
+        <!-- <menuitem action="account.action_view_bank_statement_tree" id="menu_action_cash_register" parent="menu_finance_payment_bank_cash" sequence="20"/> -->
+        <record id="view_account_journal_form_aos_adm_account" model="ir.ui.view">
+            <field name="name">account.journal.form.aos_account</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.view_account_journal_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='advanced_settings']/group/group[3]" position="inside">
+	               <field name="default_debit_adm_account_id" domain="[('deprecated', '=', False)]" groups="account.group_account_user"/>
+	               <field name="default_credit_adm_account_id" domain="[('deprecated', '=', False)]" groups="account.group_account_user"/>
+                </xpath>
+            </field>
+        </record>
+        
+        <record id="view_account_transfer_tree" model="ir.ui.view">
+            <field name="name">account.payment.tree</field>
+            <field name="model">account.payment</field>
+            <field name="arch" type="xml">
+            	<tree decoration-info="state == 'confirm'" decoration-warning="state == 'sent'" decoration-muted="state in ['reconciled', 'cancelled']" edit="false">
+                    <field name="register_date" string="Transferred"/>
+                    <field name="payment_date" string="Receipted"/>
+                    <field name="name"/>
+                    <field name="payment_method_id" invisible="1"/>
+                    <field name="journal_id" string="Transfer from"/>
+                    <field name="destination_journal_id"/>
+                    <field name="amount" sum="Amount"/>
+                    <field name="state"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="partner_type" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- <record id="view_account_payment_transfer_form" model="ir.ui.view">
+            <field name="name">account.payment.form</field>
+            <field name="model">account.payment</field>
+            <field name="arch" type="xml">
+                <form string="Internal Transfers">
+                    <header>                        
+	                    <button name="confirm" class="oe_highlight" states="draft" string="Confirm" type="object"/>
+                        <button name="post_transfer" class="oe_highlight" states="confirm" string="Transfer" type="object"/>
+                        <button name="post_receipt" class="oe_highlight" states="sent" string="Receipt" type="object"/>
+	                    <button name="cancel" states="confirm,sent,receipt" string="Cancel" type="object"/>
+                        <field name="state" widget="statusbar" statusbar_visible="confirm,sent,receipt"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button class="oe_stat_button" name="button_journal_entries"
+                                    string="Journal Items" type="object"
+                                    groups="account.group_account_manager"
+                                    attrs="{'invisible':[('move_line_ids','=',[])]}" icon="fa-bars"/>
+                            <field name="move_line_ids" invisible="1"/>
+                        </div>
+                        <field name="id" invisible="1"/>
+                        <div class="oe_title" attrs="{'invisible': [('state', '=', 'draft')]}">
+                            <h1><field name="name"/></h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="payment_type" widget="radio"/>
+                                <field name="partner_type" nolabel="1" widget="selection" string="" attrs="{'required': [('payment_type', 'in', ('inbound', 'outbound'))], 'invisible': [('payment_type', 'not in', ('inbound', 'outbound'))], 'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="partner_id" nolabel="1" attrs="{'required': [('payment_type', 'in', ('inbound', 'outbound'))], 'invisible': [('payment_type', 'not in', ('inbound', 'outbound'))], 'readonly': [('state', '!=', 'draft')]}" context="{'default_is_company': True, 'default_supplier': payment_type == 'outbound', 'default_customer': payment_type == 'inbound'}"/>
+                                <field name="journal_id" string="Transfer from" widget="selection" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="destination_journal_id" string="Transfer to" widget="selection" attrs="{'required': [('payment_type', '=', 'transfer')], 'invisible': [('payment_type', '!=', 'transfer')], 'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="hide_payment_method" invisible="1"/>
+                                <field name="payment_method_id" string=" " widget="radio" attrs="{'invisible': [('hide_payment_method', '=', True)], 'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="payment_method_code" invisible="1"/>
+                                <label for="amount" string="Transfer Amount"/>
+                                <div name="amount_div" class="o_row">
+                                    <field name="amount" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                    <field name="currency_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_currency" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                </div>
+                            </group>
+                            <group>
+                    			<field name="register_date" string="Transferred" attrs="{'required': [('state','=','confirm')], 'readonly': [('state', '!=', 'confirm')]}"/>
+                                <field name="payment_date" string="Receipted" attrs="{'required': [('state','=','sent')], 'readonly': [('state', '!=', 'sent')]}"/>
+                                <field name="communication" attrs="{'invisible': [('state', '!=', 'draft'), ('communication', '=', False)], 'readonly': [('state', '!=', 'draft')]}"/>
+                                <label for="amount_charges"/>
+                                <div name="amount_charges_div" class="o_row">
+                                    <field name="amount_charges" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                    <field name="charge_account_id" attrs="{'required': [('amount_charges','&gt;',0.0)], 'readonly': [('state', '!=', 'draft')]}"/>
+                                </div>
+			                    <field name="payment_adm"/>
+			                    <label for="card_type" attrs="{'invisible':[('payment_adm','not in',('cc','dc'))]}"/>
+			                    <div name="card_type_div" class="o_row" attrs="{'invisible':[('payment_adm','not in',('cc','dc'))]}">
+			                        <field name="card_type"/>
+			                        <field name="card_number" placeholder="Card Number"/>
+			                    </div>
+                            </group>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread" options='{"thread_level": 1}'/>
+                    </div>
+                </form>
+            </field>
+        </record> -->
+        <record id="view_account_transfer_form" model="ir.ui.view">
+            <field name="name">account.payment.form</field>
+            <field name="model">account.payment</field>
+            <field name="arch" type="xml">
+                <form string="Transfer">
+                    <header>
+                        <button name="confirm" class="oe_highlight" states="draft" string="Confirm" type="object"/>
+                        <button name="post_transfer" class="oe_highlight" states="confirm" string="Transfer" type="object"/>
+                        <button name="post_receipt" class="oe_highlight" states="sent" string="Receipt" type="object"/>
+	                    <button name="cancel" states="confirm,sent,receipt,reconciled,posted" string="Cancel" type="object"/>
+	                    <button name="action_draft" class="oe_highlight" states="cancelled" string="Set To Draft" type="object"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirm,sent,receipt"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button class="oe_stat_button" name="button_journal_entries"
+                                    string="Journal Items" type="object"
+                                    groups="account.group_account_manager"
+                                    attrs="{'invisible':[('move_line_ids','=',[])]}" icon="fa-bars"/>
+                            <field name="move_line_ids" invisible="1"/>
+                        </div>
+                        <field name="id" invisible="1"/>
+                        <div class="oe_title" attrs="{'invisible': [('state', '=', 'draft')]}">
+                            <h1><field name="name"/></h1>
+                        </div>
+                        <group>
+                            <group>
+                                <!-- <field name="payment_type" widget="radio" attrs="{'readonly': [('state', '!=', 'draft')]}"/> -->
+                                <field name="payment_type" widget="radio" invisible="1"/>
+                                <field name="partner_type" widget="selection" attrs="{'required': [('state', '=', 'draft'), ('payment_type', 'in', ('inbound', 'outbound'))], 'invisible': [('payment_type', 'not in', ('inbound', 'outbound'))], 'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="partner_id" attrs="{'required': [('state', '=', 'draft'), ('payment_type', 'in', ('inbound', 'outbound'))], 'invisible': [('payment_type', 'not in', ('inbound', 'outbound'))], 'readonly': [('state', '!=', 'draft')]}" context="{'default_is_company': True, 'default_supplier': payment_type == 'outbound', 'default_customer': payment_type == 'inbound'}"/>
+                                <label for="amount"/>
+                                <div name="amount_div" class="o_row">
+                                	<field name="amount" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                    <field name="currency_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_currency" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                </div>
+                                <field name="journal_id" string="Transfer from" widget="selection" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="destination_journal_id" string="Transfer to" widget="selection" attrs="{'required': [('payment_type', '=', 'transfer')], 'invisible': [('payment_type', '!=', 'transfer')], 'readonly': [('state', '!=', 'draft')]}"/>
+                    			<label for="force_rate" groups="base.group_multi_currency"/>
+                                <div name="amount_curr_div" class="o_row" groups="base.group_multi_currency">
+			                    	<field name="force_rate" attrs="{'readonly': [('state', '!=', 'draft')]}" options="{'currency_field': 'company_currency_id'}"/>
+				                    <field name="company_currency_id" invisible="1" options="{'no_create': True, 'no_open': True}" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+				                </div>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="hide_payment_method" invisible="1"/>
+                                <field name="payment_method_id" string=" " widget="radio" attrs="{'invisible': [('hide_payment_method', '=', True)], 'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="payment_method_code" invisible="1"/>
+                            </group>
+                            <group>
+                    			<field name="register_date" string="Date of Transfer" attrs="{'required': [('state','=','confirm')]}"/>
+                                <field name="payment_date" string="Date of Receipt" attrs="{'required': [('state','=','sent')]}"/>
+                                <field name="communication" attrs="{'invisible': [('state', '!=', 'draft'), ('communication', '=', False)], 'readonly': [('state', '!=', 'draft')]}"/>
+                                <label for="amount_charges"/>
+                                <div name="amount_charges_div" class="o_row">
+                                    <field name="amount_charges" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                    <field name="charge_account_id" attrs="{'required': [('amount_charges','&gt;',0.0)], 'readonly': [('state', '!=', 'draft')]}"/>
+                                </div>
+			                    <field name="payment_adm"/>
+			                    <label for="card_type" attrs="{'invisible':[('payment_adm','not in',('cc','dc'))]}"/>
+			                    <div name="card_type_div" class="o_row" attrs="{'invisible':[('payment_adm','not in',('cc','dc'))]}">
+			                        <field name="card_type"/>
+			                        <field name="card_number" placeholder="Card Number"/>
+			                    </div>
+                            </group>
+                            <group>
+			                    <field name="other_lines" nolabel="1" attrs="{'readonly': [('state', '!=', 'draft')]}">
+			                    	<tree editable="bottom">
+			                    		<field name="name" string="Description"/>
+			                    		<field name="account_id"/>
+			                    		<field name="currency_id" options="{'no_create': True, 'no_open': True}"/>
+			                    		<field name="amount" string="Amount"/>
+			                    	</tree>
+			                    </field>
+			                </group>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                      <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                      <field name="message_ids" widget="mail_thread"/>
+                  </div>
+                </form>
+            </field>
+        </record>
+        
+        <record id="action_account_transfer" model="ir.actions.act_window">
+            <field name="name">Transfers</field>
+            <field name="res_model">account.payment</field>
+            <field name="view_mode">tree,kanban,form,graph</field>
+            <field name="context">{'default_payment_type': 'transfer'}</field>
+            <field name="domain">[('payment_type','=','transfer')]</field>
+            <field name="view_id" ref="view_account_transfer_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                  Click to register a bank transfer
+                </p><p>
+                  Payments are used to register liquidity movements (send, collect or transfer money).
+                  You can then process those payments by your own means or by using installed facilities.
+                </p>
+            </field>
+        </record>
+        
+        <record id="action_account_transfer_view1" model="ir.actions.act_window.view">
+            <field eval="1" name="sequence"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_account_transfer_tree"/>
+            <field name="act_window_id" ref="action_account_transfer"/>
+        </record>
+
+        <record id="action_account_transfer_view2" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_account_transfer_form"/>
+            <field name="act_window_id" ref="action_account_transfer"/>
+        </record>    
+        
+        <menuitem action="action_account_transfer" id="menu_action_account_payments_transfer" 
+        	parent="aos_base_account.menu_finance_payment_bank_cash" sequence="30"/>
+        
+        
+    </data>
+</openerp>

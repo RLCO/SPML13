@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Payment sequences -->
+        
+        <record id="sequence_payment_transfer_out" model="ir.sequence">
+            <field name="name">Payments transfer sequence</field>
+            <field name="code">account.payment.transfer.out</field>
+            <field name="prefix">TRANS-OUT/%(range_year)s/</field>
+            <field eval="1" name="number_next"/>
+            <field eval="1" name="number_increment"/>
+            <field eval="True" name="use_date_range"/>
+            <field eval="False" name="company_id"/>
+            <field name="padding">4</field>
+        </record>
+        <record id="sequence_payment_transfer_in" model="ir.sequence">
+            <field name="name">Payments transfer sequence</field>
+            <field name="code">account.payment.transfer.in</field>
+            <field name="prefix">TRANS-IN/%(range_year)s/</field>
+            <field eval="1" name="number_next"/>
+            <field eval="1" name="number_increment"/>
+            <field eval="True" name="use_date_range"/>
+            <field eval="False" name="company_id"/>
+            <field name="padding">4</field>
+        </record>
+        
+        <!-- Account-related subtypes for messaging / Chatter -->
+        <record id="mt_transfer_receipt" model="mail.message.subtype">
+            <field name="name">Transfer Receipt</field>
+            <field name="res_model">account.payment</field>
+            <field name="default" eval="False"/>
+            <field name="description">Transfer Receipt/Settled</field>
+        </record>
+        <record id="mt_transfer_sent" model="mail.message.subtype">
+            <field name="name">Transfer Sent</field>
+            <field name="res_model">account.payment</field>
+            <field name="default" eval="False"/>
+            <field name="description">Transfer Sent/Advance</field>
+        </record>
+        <record id="mt_transfer_confirm" model="mail.message.subtype">
+            <field name="name">Transfer Confirmed</field>
+            <field name="res_model">account.payment</field>
+            <field name="default" eval="False"/>
+            <field name="hidden" eval="True"/>
+            <field name="description">Transfer Confirmed</field>
+        </record>
+        <record id="mt_transfer_created" model="mail.message.subtype">
+            <field name="name">Transfer Created</field>
+            <field name="res_model">account.payment</field>
+            <field name="default" eval="False"/>
+            <field name="hidden" eval="True"/>
+            <field name="description">Transfer Created</field>
+        </record>
+
+    </data>
+</odoo>
